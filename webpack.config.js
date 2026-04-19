@@ -80,11 +80,15 @@ const renderPlugins = [
   new CheckerPlugin(),
   new webpack.ProvidePlugin({React: 'react'}),
 ]
-if (mode === 'production') {
+if (mode === 'production' && process.env.WEBPACK_ANALYZE === '1') {
   renderPlugins.push(new BundleAnalyzerPlugin())
 }
 const renderer = Object.assign({}, base, {
   target: 'electron-renderer',
+  // ssh2 1.x ships native bindings and modern JS; load from app node_modules at runtime
+  externals: Object.assign({}, base.externals, {
+    ssh2: 'commonjs2 ssh2',
+  }),
   output: Object.assign({}, base.output, {
     path: resolve(base.output.path, 'renderer')
   }),

@@ -38,26 +38,42 @@ export const connectToRedis = createAction('CONNECT', config => ({getState, disp
       }).listen(0, function () {
         handleRedis(config, { host: '127.0.0.1', port: server.address().port })
       })
+    }).on('keyboard-interactive', (name, instructions, instructionsLang, prompts, finish) => {
+      // Many servers use keyboard-interactive instead of plain password auth
+      const pwd = config.sshPassword || ''
+      if (prompts.length && pwd) {
+        finish(prompts.map(() => pwd))
+      } else {
+        finish([])
+      }
     }).on('error', err => {
       sshErrorThrown = true;
       dispatch(disconnect());
-      alert(`SSH Error: ${err.message}`);
+      let hint = err.message
+      if (hint.indexOf('All configured authentication methods failed') !== -1) {
+        hint += '（请核对 SSH 用户名/密码或私钥；部分服务器需键盘交互认证，已自动尝试。）'
+      }
+      alert(`SSH Error: ${hint}`);
     })
 
     try {
       const connectionConfig = {
         host: config.sshHost,
-        port: config.sshPort || 22,
-        username: config.sshUser
+        port: Number(config.sshPort) || 22,
+        username: config.sshUser,
+        tryKeyboard: true,
+        readyTimeout: 30000,
       }
       if (config.sshKey) {
+        const key = String(config.sshKey).replace(/^\uFEFF/, '').trim()
         conn.connect(Object.assign(connectionConfig, {
-          privateKey: config.sshKey,
-          passphrase: config.sshKeyPassphrase
+          privateKey: key,
+          passphrase: config.sshKeyPassphrase || undefined,
         }))
       } else {
+        const pwd = config.sshPassword || ''
         conn.connect(Object.assign(connectionConfig, {
-          password: config.sshPassword
+          password: pwd || undefined,
         }))
       }
     } catch (err) {

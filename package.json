@@ -3,19 +3,24 @@
   "description": "GUI for Redis",
   "productName": "Medis",
   "version": "1.0.3",
-  "electronVersion": "4.0.0",
+  "electronVersion": "4.2.2",
   "license": "MIT",
   "author": "luin <i@zihua.li> (http://zihua.li)",
   "main": "dist/main",
+  "engines": {
+    "node": ">=10 <13"
+  },
   "scripts": {
     "build": "rm -rf dist && webpack",
     "watch": "WEBPACK_WATCH=true npm run build",
     "start": "electron .",
-    "pack": "NODE_ENV=production npm run build && node bin/pack.js"
+    "pack": "NODE_ENV=production npm run build && node bin/pack.js",
+    "pack:darwin": "NODE_ENV=production npm run build && node bin/pack-darwin-unsigned.js",
+    "pack:darwin:only": "node bin/pack-darwin-unsigned.js"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/luin/medis.git"
+    "url": "https://github.com/trying2025/medis.git"
   },
   "dependencies": {
     "electron": "^4.2.2",
@@ -28,7 +33,7 @@
     "lodash.sortedindexby": "^4.6.0",
     "medis-react-codemirror": "^1.1.1",
     "redis-commands": "^1.5.0",
-    "ssh2": "^0.8.9",
+    "ssh2": "^1.15.0",
     "xterm": "^3.13.1"
   },
   "devDependencies": {
